@@ -1,6 +1,8 @@
 import User from "../models/user.model.js";
 import Notification from "../models/notification.model.js";
 import bcrypt from "bcryptjs";
+import { v2 as cloudinary } from "cloudinary";
+
 export const getUserProfile = async (req, res) => {
   const { username } = req.params;
 
@@ -91,7 +93,7 @@ export const updateUser = async (req, res) => {
   let { profileImg, coverImg } = req.body;
   const userId = req.user._id;
   try {
-    const user = await User.findById(userId);
+    let user = await User.findById(userId); //here we used let because we're gonna save it and so it is gonna get changed in future
     if (!user) return res.status(404).json({ message: "User not found" });
     if (
       (!newPassword && currentPassword) ||
@@ -114,11 +116,41 @@ export const updateUser = async (req, res) => {
       }
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(newPassword, salt);
-
-      if (profileImg) {
-      }
-      if (coverImg) {
-      }
     }
-  } catch (error) {}
+    if (profileImg) {
+      if (user.profileImg) {
+        await cloudinary.uploader.destroy(
+          user.profileImg.split("/").pop().split(".")[0]
+        );
+      }
+
+      const uploadedResponse = await cloudinary.uploader.upload(profileImg);
+      profileImg = uploadedResponse.secure_url;
+    }
+    if (coverImg) {
+      if (user.coverImg) {
+        await cloudinary.uploader.destroy(
+          user.coverImg.split("/").pop().split(".")[0]
+        );
+      }
+      const uploadedResponse = await cloudinary.uploader.upload(coverImg);
+      coverImg = uploadedResponse.secure_url;
+    }
+    user.fullName = fullName || user.fullName;
+    user.email = email || user.email;
+    user.bio = bio || user.bio;
+    user.link = link || user.link;
+    user.profileImg = profileImg || user.profileImg;
+    user.coverImg = coverImg || user.coverImg;
+
+    user = await user.save();
+
+    //password will be null in response only it won't be changed in database as user.save() was done before nulling the password
+    user.password = null;
+
+    return res.status(200).json(user);
+  } catch (error) {
+    console.log("Error in updateUser : ", error.message);
+    res.status(500).json({ error: error.message });
+  }
 };
