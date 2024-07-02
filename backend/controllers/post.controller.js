@@ -3,7 +3,32 @@ import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
 import { v2 as cloudinary } from "cloudinary";
 
-export const getAllPosts = async (req, res) => {};
+export const getAllPosts = async (req, res) => {
+  try {
+    // const posts = await Post.find()
+    //   .sort({ createdAt: -1 })
+    //   .populate("user")
+    //   .select("-password");
+    //this way you cannot hide password in response of api call
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "user",
+        select: "-password",
+      })
+      .populate({ path: "comments.user", select: "-password" });
+    //this way we can hide
+
+    if (posts.length === 0) {
+      return res.status(200).json([]); //returning 200 repsonse and empty error on no posts becasue no problem it just shows that we have no posts in our system yet
+    }
+
+    res.status(200).json(posts);
+  } catch (error) {
+    console.log("Error in getAllPosts controller : ", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 export const createPost = async (req, res) => {
   try {
     const { text } = req.body;
