@@ -3,7 +3,7 @@ import RightPanelSkeletion from "../skeletons/RightPanelSkeletion";
 import { USERS_FOR_RIGHT_PANEL } from "../../utils/db/dummy";
 import { Link } from "react-router-dom";
 const RightPanel = () => {
-  const isLoading = true;
+  const isLoading = false;
   return (
     <div>
       <div className="hidden lg:block my-4 mx-2">
