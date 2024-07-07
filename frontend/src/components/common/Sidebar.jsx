@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import XSvg from "../svgs/X";
 import { MdHomeFilled } from "react-icons/md";
 import { IoNotifications } from "react-icons/io5";
+import { FaUser } from "react-icons/fa";
+import { BiLogOut } from "react-icons/bi";
 
 const Sidebar = () => {
   const data = {
@@ -16,7 +18,7 @@ const Sidebar = () => {
         <Link to="/" className="flex justify-center ml-4 md:justify-start">
           <XSvg className="w-12 h-12 px-2 fill-white hover:bg-stone-900 rounded-full" />
         </Link>
-        <ul className="flex flex-col gap-3 mt-4">
+        <ul className="flex flex-col gap-3 mt-4 ml-1">
           <li className="flex justify-center md:justify-start">
             <Link
               to="/"
@@ -35,10 +37,37 @@ const Sidebar = () => {
               <span className="text-lg hidden md:block">Notifications</span>
             </Link>
           </li>
-          <li>
-            <Link to="/profile/${data?.username}}"></Link>
+          <li className="flex justify-center md:justify-start">
+            <Link
+              to={`/profile/${data?.username}`}
+              className="flex gap-3 items-center hover:bg-stone-900 transition-all rounded-full duration-300 py-2 pl-2 pr-4 max-w-fit cursor-pointer"
+            >
+              <FaUser />
+              <span className="text-lg hidden md:block">Profile</span>
+            </Link>
           </li>
         </ul>
+        {data && (
+          <Link
+            to={`profile/${data?.username}`}
+            className="mt-auto mb-10 flex gap-2 items-start hover:bg-[#181818] transition-all rounded-full duration-300 py-2 px-4 "
+          >
+            <div className="avatar hidden md:inline-flex">
+              <div className="w-8 rounded-full">
+                <img src={data?.profileImg} />
+              </div>
+            </div>
+            <div className="flex justify-between flex-1">
+              <div className="hidden md:block">
+                <p className="text-white font-bold text-sm w-20 truncate">
+                  {data?.fullName}
+                </p>
+                <p className="text-slate-500 text-sm">@{data?.username}</p>
+              </div>
+              <BiLogOut className="w-5 h-5 cursor-pointer" />
+            </div>
+          </Link>
+        )}
       </div>
     </div>
   );
