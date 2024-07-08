@@ -70,6 +70,7 @@ const CreatePost = () => {
                 hidden
                 ref={imgRef}
                 onChange={handleImgChange}
+                accept="image/*"
               />
               <button className="btn btn-primary rounded-full btn-sm text-white px-4">
                 {isPending ? "Posting..." : "Post"}
