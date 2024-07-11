@@ -5,6 +5,7 @@ import { MdOutlineMail, MdPassword } from "react-icons/md";
 import { FaUser } from "react-icons/fa";
 import { MdDriveFileRenameOutline } from "react-icons/md";
 import { useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 const SignUpPage = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -13,28 +14,33 @@ const SignUpPage = () => {
     password: "",
   });
   const { mutate, isError, isPending, error } = useMutation({
-    mutationFn: async (email, username, fullName, password) => {
-      try {
-        const res = await fetch("api/auth/signup", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, username, fullName, password }),
-        });
-        if (!res.ok) throw new Error("Something went wrong");
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        console.log(data);
-        return data;
-      } catch (error) {
-        console.log(error);
+    mutationFn: async ({ email, username, fullName, password }) => {
+      const res = await fetch("api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, username, fullName, password }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Something went wrong");
       }
+      const data = await res.json();
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Account created successfully");
+    },
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
+
   const handleSubmit = (e) => {
     e.preventDefault(); //preventing page from reloading after the form is submitted
-    console.log(formData);
+    mutate(formData);
   };
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -99,9 +105,11 @@ const SignUpPage = () => {
             />
           </label>
           <button className="btn rounded-full btn-primary text-white">
-            Sign up
+            {isPending ? "Loading..." : "Sign up"}
           </button>
-          {isError && <p className="text-red-500">Something went wrong</p>}
+          {isError && (
+            <p className="align-center text-red-500">{error.message}</p>
+          )}
         </form>
         <div className="flex flex-col lg:w-2/3 gap-2 mt-4">
           <p>Already have an account? </p>
