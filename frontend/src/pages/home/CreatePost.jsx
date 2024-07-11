@@ -20,22 +20,24 @@ const CreatePost = () => {
     error,
   } = useMutation({
     mutationFn: async ({ text, img }) => {
-      const formData = new FormData();
-      formData.append("text", text);
-      if (img) {
-        formData.append("img", img);
+      try {
+        const res = await fetch("/api/posts/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text, img }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Something went wrong");
+        }
+        return data;
+      } catch (error) {
+        throw new Error(error);
       }
-
-      const res = await fetch("/api/posts/create", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Something went wrong");
-      }
-      return data;
     },
+
     onSuccess: () => {
       setText("");
       setImg(null);
@@ -52,7 +54,11 @@ const CreatePost = () => {
   const handleImgChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImg(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImg(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -65,7 +71,7 @@ const CreatePost = () => {
       </div>
       <form className="flex flex-col gap-2 w-full" onSubmit={handleSubmit}>
         <textarea
-          className="textarea w-full p-0 text-lg resize-none border-none focus:outline-none border-gray-800"
+          className="textarea w-full p-0 text-lg resize-none border-none focus:outline-none  border-gray-800"
           placeholder="What is happening?!"
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -80,7 +86,7 @@ const CreatePost = () => {
               }}
             />
             <img
-              src={URL.createObjectURL(img)}
+              src={img}
               className="w-full mx-auto h-72 object-contain rounded"
             />
           </div>
@@ -110,5 +116,4 @@ const CreatePost = () => {
     </div>
   );
 };
-
 export default CreatePost;
