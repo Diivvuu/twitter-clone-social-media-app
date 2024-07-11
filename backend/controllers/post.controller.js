@@ -84,20 +84,29 @@ export const getUserPosts = async (req, res) => {
 export const createPost = async (req, res) => {
   try {
     const { text } = req.body;
-    let { img } = req.body;
+    // let { img } = req.body;
     const userId = req.user._id.toString();
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (!text && !img) {
+    if (!text && !req.file) {
       return res
         .status(400)
         .json({ error: "Post must have an image or a text" });
     }
-
-    if (img) {
-      const uploadedResponse = await cloudinary.uploader(img);
+    let img;
+    if (req.file) {
+      const uploadedResponse = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          { resource_type: "image" },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          }
+        );
+        uploadStream.end(req.file.buffer);
+      });
       img = uploadedResponse.secure_url;
     }
 
