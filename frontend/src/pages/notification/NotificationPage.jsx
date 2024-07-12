@@ -3,32 +3,46 @@ import { FaHeart, FaUser } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 import LoadingSpinner from "../../components/common/LoadingSpinner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 const NotificationPage = () => {
-  const isLoading = false;
-  const notifications = [
-    {
-      _id: "1",
-      from: {
-        _id: "1",
-        username: "johndoe",
-        profileImg: "/avatars/boy2.png",
-      },
-      type: "follow",
+  const queryClient = useQueryClient();
+  const { data: notifications, isLoading } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/notifications");
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Something went wrong");
+        return data;
+      } catch (error) {
+        throw new Error(error.message);
+      }
     },
-    {
-      _id: "2",
-      from: {
-        _id: "2",
-        username: "janedoe",
-        profileImg: "/avatars/girl1.png",
-      },
-      type: "like",
+  });
+  const { mutate: deleteNotification } = useMutation({
+    mutationFn: async () => {
+      try {
+        const res = await fetch("api/notifications", {
+          method: "DELETE",
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Something went wrong!");
+        return data;
+      } catch (error) {
+        throw new Error(error);
+      }
     },
-  ];
-  const deleteNotification = () => {
-    alert("All notifications deleted");
-  };
+    onSuccess: () => {
+      toast.success("Notification deleted");
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+    onError: () => {
+      toast.error(error.message);
+    },
+  });
+
   return (
     <>
       <div className="flex-[4_4_0] border-l border-r border-gray-700 min-h-screen">
@@ -53,7 +67,11 @@ const NotificationPage = () => {
             <LoadingSpinner size="lg" />
           </div>
         )}
-        {notifications?.length === 0 && <div>No notifications yet :o</div>}
+        {notifications?.length === 0 && (
+          <div className="flex justify-center mt-8">
+            No notifications yet :-/
+          </div>
+        )}
         {notifications?.map((notification) => (
           <div className="border-b border-gray-700" key={notification._id}>
             <div className="flex gap-2 p-4">
@@ -66,7 +84,12 @@ const NotificationPage = () => {
               <Link to={`/profile/${notification.from.username}`}>
                 <div className="avatar">
                   <div className="w-8 rounded-full">
-                    <img src={notification.from.profileImg} />
+                    <img
+                      src={
+                        notification.from.profileImg ||
+                        "/avatar-placeholder.png"
+                      }
+                    />
                   </div>
                 </div>
                 <div className="flex gap-1">
