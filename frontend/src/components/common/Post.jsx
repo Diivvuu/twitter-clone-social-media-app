@@ -51,7 +51,7 @@ const Post = ({ post }) => {
       }
     },
     onSuccess: (updatedLikes) => {
-      toast.success("Post liked successfully");
+      // toast.success("Post liked successfully");
       // not the best practice, cz it will refetch all posts there
       // queryClient.invalidateQueries({ queryKey: ["posts"] });
       // we will update cache driectory
