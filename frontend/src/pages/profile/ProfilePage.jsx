@@ -86,16 +86,13 @@ const ProfilePage = () => {
                   <FaArrowLeft className="w-4 h-4" />
                 </Link>
                 <div className="flex flex-col">
-                  <p className="font-bold text-lg">{user?.fullName}</p>
-                  <span className="text-sm text-slate-500">
-                    {Posts?.length} posts
-                  </span>
+                  <p className="font-bold text-lg my-2">{user?.fullName}</p>
                 </div>
               </div>
               {/* cover image */}
               <div className="relative group/cover">
                 <img
-                  src={coverImg || user?.coverImg}
+                  src={coverImg || user?.coverImg || "/cover.png"}
                   className="h-52 w-full object-cover"
                   alt={`${user?.fullName}'s cover photo`}
                 />
